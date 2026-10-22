@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Saman List – Total Required</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f5f6f2;--surface:#fff;--ink:#16302a;--mute:#5d6f69;--line:#dde3dc;--accent:#1f6b53;--tot:#fff3cf;--tot-ink:#6b4a00;--chip:#e8f0ec}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f1a17;--surface:#16241f;--ink:#e6efeb;--mute:#93a7a0;--line:#26372f;--accent:#5fc7a0;--tot:#3a3012;--tot-ink:#ffd873;--chip:#1f332b}}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:90px}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.45 Hind,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 16px}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:22px;margin:0 0 8px;font-weight:700}
+.sub{color:var(--mute);font-size:14px;margin-left:6px;font-weight:400}
+input[type=search]{width:100%;padding:11px 14px;font:inherit;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+input[type=search]:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.cats{display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:thin}
+.cats button{flex:none;font:500 14px Hind,sans-serif;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.cats button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.cats button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{max-width:860px;margin:0 auto;padding:8px 16px 48px}
+#count{color:var(--mute);font-size:14px;margin:10px 0 0}
+section{margin-top:22px}
+h2{font-size:17px;margin:0 0 6px;padding-left:10px;border-left:4px solid var(--accent);font-weight:700}
+h2 small{color:var(--mute);font-weight:400;font-size:13px;margin-left:6px}
+ul{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+.nm{font-weight:600}
+.br{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.br span{background:var(--chip);color:var(--mute);font-size:12.5px;padding:1px 8px;border-radius:6px}
+.tot{flex:none;background:var(--tot);color:var(--tot-ink);font-weight:700;padding:4px 12px;border-radius:8px;white-space:nowrap}
+#empty{display:none;text-align:center;color:var(--mute);padding:40px 0}
+@media print{header{position:static}.cats,input{display:none}li{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Saman List<span class="sub">Total Required (List 1 – 5)</span></h1>
+<input type="search" id="q" placeholder="Search karein: mirch, ghee, L3, kg ..." aria-label="Search" autocomplete="off">
+<div class="cats" id="cats"></div>
+</div></header>
+<main>
+<p id="count"></p>
+<div id="list"></div>
+<p id="empty">Kuch nahi mila. Dusra naam try karein.</p>
+</main>
+<script>
+// Format: Item | Total | L1 qty ; L2 qty ; ...  (items of same type sit together)
+var D=[
+["Sabji & Hara Masala",[
+"Aloo (Potato)|40 kg|L1 40 kg",
+"Pyaz Badi (Onion)|107 kg|L1 7 kg;L3 100 kg",
+"Adrak (Ginger)|9 kg|L1 1 kg;L3 8 kg",
+"Lahsun / Lesun (Garlic)|8 kg|L3 8 kg",
+"Lahsun Sukha Sabut (Dry Garlic)|1 kg|L1 1 kg",
+"Hara Mirch (Green Chilli)|4 kg|L1 3 kg;L3 1 kg",
+"Simla Mirch (Capsicum)|5 kg|L1 3 kg;L3 2 kg",
+"Hara Matar (Green Peas)|3 kg|L1 3 kg",
+"Hara Dhaniya (Coriander Leaves)|3.5 kg|L1 2 kg;L2 500 g;L3 1 kg",
+"Patta Gobhi (Cabbage)|15 kg|L1 15 kg",
+"Gajar Lal (Red Carrot)|2 kg|L1 2 kg",
+"Papita Kacha (Raw Papaya)|3 kg|L3 3 kg"]],
+["Masale (Spices)",[
+"Lal Mirch Powder (Pisa)|500 g|L1 500 g",
+"Lal Mirch Khada (Sabut)|300 g|L1 300 g",
+"Kashmiri Mirch (Degi Mirch)|1.1 kg|L1 300 g;L2 500 g;L3 300 g",
+"Kali Mirch Khada (Black Pepper)|700 g|L3 700 g",
+"Pisa Kali Mirch (Pepper Powder)|702 g|L3 702 g",
+"Haldi Powder (Turmeric)|1 kg|L3 1 kg",
+"Dhaniya Powder (Coriander)|800 g|L3 800 g",
+"Khada Jeera (Cumin)|1.1 kg|L1 400 g;L3 700 g",
+"Shah Jeera (Caraway)|160 g|L3 160 g",
+"Saunf (Fennel)|50 g|L2 50 g",
+"Ajwain (Carom)|50 g|L1 50 g",
+"Pachphoran|50 g|L1 50 g",
+"Chhoti Elaichi (Green Cardamom)|600 g|L1 300 g;L2 100 g;L3 200 g",
+"Badi Elaichi (Black Cardamom)|700 g|L3 700 g",
+"Laung (Cloves)|210 g|L2 50 g;L3 160 g",
+"Daal Chini (Cinnamon)|300 g|L3 300 g",
+"Jaiphal (Nutmeg)|150 g|L3 150 g",
+"Javitri (Mace)|250 g|L1 100 g;L3 150 g",
+"Tejpatta (Bay Leaf)|250 g|L3 250 g",
+"Hing (Asafoetida)|25 g|L1 25 g",
+"Aamchur / Khatai Powder|398 g|L1 398 g",
+"Chaat Masala|500 g|L3 500 g",
+"Jal Jeera Powder|300 g|L1 300 g",
+"Safed Til (White Sesame)|1.2 kg|L2 600 g;L3 600 g",
+"Tata Namak (Salt)|18 kg|L1 3 kg;L2 3 kg;L3 12 kg",
+"Kala Namak (Black Salt)|500 g|L1 500 g"]],
+["Dry Fruits & Mewa",[
+"Kaju Tukda (Broken Cashew)|2.3 kg|L1 300 g;L3 2 kg",
+"Badam Hawai (Almond Flakes)|600 g|L2 100 g;L3 500 g",
+"Kishmish (Raisins)|800 g|L1 300 g;L3 500 g",
+"Chironji|500 g|L1 500 g",
+"Posta Dana (Poppy Seeds)|500 g|L3 500 g",
+"Gari (Sukha Nariyal)|2 kg|L3 2 kg",
+"Gari Burada (Desiccated Coconut)|2.5 kg|L2 2 kg;L3 500 g",
+"Lawa (Puffed Lotus Seeds)|200 g|L3 200 g"]],
+["Aata, Maida & Chawal",[
+"Aata (Badshah / Chakki)|150 kg|L2 150 kg",
+"Maida (Kanpuri)|14 kg|L1 2 kg;L2 2 kg;L3 10 kg",
+"Suji (Rawa)|8 kg|L2 5 kg;L4 3 kg",
+"Besan (Chana Besan)|13 kg|L1 1 kg;L5 12 kg",
+"Ararot (Arrowroot)|2 kg|L1 2 kg",
+"Chawal India Gate (Basmati)|10 kg|L3 10 kg",
+"Lamba Chawal|60 kg|L3 60 kg"]],
+["Daal & Dalhan",[
+"Moong Dal (Dhoti)|11 kg|L1 4 kg;L4 7 kg",
+"Urad Dal (Dhoti / Chilka)|4 kg|L1 3 kg;L4 1 kg",
+"Safed Matar (Dry White Peas)|15 kg|L1 15 kg"]],
+["Chini & Gud",[
+"Chini (Sugar)|139 kg|L1 15 kg;L2 14 kg;L3 35 kg;L4 40 kg;L5 35 kg",
+"Gud / Bheli (Jaggery)|5 kg|L1 5 kg"]],
+["Tel & Ghee",[
+"Refined Oil (Fortune / Gemini)|93 L|L1 15 L;L2 8 L;L3 45 L;L5 25 L",
+"Oil Choti (Essence oil)|60 g|L3 60 g",
+"Desi Ghee (Pure)|7.5 kg|L1 500 g;L2 1 kg;L3 3 kg;L4 3 kg",
+"Dalda / Rath Ghee (Vanaspati)|14 kg|L1 2 kg;L2 1 kg;L3 8 kg;L4 1 kg;L5 2 kg"]],
+["Dairy & Anda",[
+"Doodh (Amul / Taaza)|59 L|L2 8 L;L3 50 L;L5 1 L",
+"Dahi (Curd)|42 kg|L1 40 kg;L3 2 kg",
+"Khoya / Mawa (Kesariya)|25 kg|L2 1 kg;L3 24 kg",
+"Anda (Eggs)|1 piece|L3 1 piece"]],
+["Noodles, Namkeen & Biscuit",[
+"Chowmein (Noodles)|12 kg|L1 12 kg",
+"Pasta|10 kg|L1 10 kg",
+"Sima (check karein: Sewai?)|6 packet|L2 6 packet",
+"Namkin Bhujiya|4 kg|L1 4 kg",
+"Parle-G Biscuit|1 packet|L2 1 packet"]],
+["Baking, Essence & Colors",[
+"Baking Powder|6 dabba|L1 6 dabba",
+"Khane Ka Soda (Baking Soda)|5.2 kg|L1 200 g;L2 5 kg",
+"Vanilla Powder / Essence|4 dabba|L2 3 dabba;L3 1 dabba",
+"Kevra (Kewra Water)|9 bottle|L2 4 bottle;L3 5 bottle",
+"Food Color Green (Hara Rang)|101 g|L1 1 g;L3 100 g",
+"Food Color Orange (Narangi)|103 g|L1 53 g;L5 50 g",
+"Food Color Yellow (Pila Rang)|50 g|L5 50 g"]],
+["Sauce, Chutney & Sirka",[
+"Tomato Sauce|4 bottle|L1 3 bottle;L3 1 bottle",
+"Soya Sauce|1 bottle|L3 1 bottle",
+"Sirka Jamun (Jamun Vinegar)|4 bottle|L3 4 bottle",
+"Imli Pakki (Tamarind)|2 kg|L1 2 kg"]],
+["Anya (Other)",[
+"Machis (Matchbox)|4 packet|L1 1;L2 1;L3 1;L5 1 packet",
+"Fitkari (Alum)|200 g|L3 200 g"]]
+];
+var list=document.getElementById('list'),q=document.getElementById('q'),cats=document.getElementById('cats'),count=document.getElementById('count'),empty=document.getElementById('empty'),active='';
+function esc(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+var rows=[],secs=[];
+D.forEach(function(c){
+ var sec=document.createElement('section'),h=document.createElement('h2'),ul=document.createElement('ul');
+ sec.appendChild(h);sec.appendChild(ul);list.appendChild(sec);
+ var obj={name:c[0],sec:sec,h:h,items:[]};secs.push(obj);
+ c[1].forEach(function(r){
+  var p=r.split('|'),li=document.createElement('li');
+  li.innerHTML='<div><div class="nm">'+esc(p[0])+'</div><div class="br">'+p[2].split(';').map(function(b){return'<span>'+esc(b)+'</span>'}).join('')+'</div></div><div class="tot">'+esc(p[1])+'</div>';
+  ul.appendChild(li);obj.items.push({li:li,text:(p[0]+' '+p[2]+' '+c[0]).toLowerCase()});
+ });
+});
+function mk(label,val){var b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('aria-pressed',val===active);b.onclick=function(){active=val;render()};b.dataset.v=val;cats.appendChild(b)}
+mk('Sab',''); D.forEach(function(c){mk(c[0],c[0])});
+function render(){
+ var t=q.value.trim().toLowerCase().split(/\s+/).filter(Boolean),n=0;
+ [].forEach.call(cats.children,function(b){b.setAttribute('aria-pressed',b.dataset.v===active)});
+ secs.forEach(function(s){
+  var shown=0;
+  s.items.forEach(function(i){
+   var ok=(!active||active===s.name)&&t.every(function(w){return i.text.indexOf(w)>-1});
+   i.li.style.display=ok?'':'none';if(ok)shown++;
+  });
+  s.sec.style.display=shown?'':'none';
+  s.h.innerHTML=esc(s.name)+'<small>'+shown+' item</small>';n+=shown;
+ });
+ count.textContent=n+' item dikh rahe hain';
+ empty.style.display=n?'none':'block';
+}
+q.addEventListener('input',render);render();
+</script>
+</body>
+</html>
